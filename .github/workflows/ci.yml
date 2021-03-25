@@ -18,11 +18,15 @@ jobs:
         with:
           java-version: 11
       - name: Build
-        run: ./mvnw verify -B
-      - name: install ssh key
+        run: ./mvnw clean package -Dquarkus.package.type=uber-jar -B
+      - name: Install ssh key
         uses: webfactory/ssh-agent@v0.4.1
         with:
           ssh-private-key: ${{ secrets.ORAVM }}
-      - name: create .ssh/known_hosts
+      - name: Create .ssh/known_hosts
         run: |
-          ssh-keyscan -H -t rsa -v 130.61.160.255  >> ~/.ssh/known_hosts
+          ssh-keyscan -H -t rsa -v ${{ secrets.ORAVM_IP }}  >> ~/.ssh/known_hosts
+      - name: Copy binaries to oravm
+        run: |
+          ls -l target/
+          scp target/ssh-demo-1.0.0-SNAPSHOT-runner.jar ${{ secrets.ORAVM_USER }}@${{ secrets.ORAVM_IP }}:
